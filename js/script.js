@@ -1,11 +1,11 @@
-// Replace VIDEO_ID with your Vimeo video ID
 const VIDEO_ID = '817783353';
-const WATCHED_PERCENTAGE_THRESHOLD = 90; // Change this value to set the desired threshold
+const WATCHED_PERCENTAGE_THRESHOLD = 80;
 
-const player = new Vimeo.Player(document.querySelector('iframe'), { id: VIDEO_ID });
+const createVimeoPlayer = (selector, videoId) => {
+  return new Vimeo.Player(document.querySelector(selector), { id: videoId });
+};
 
-function onAccumulatedTimeReachedThreshold() {
-  // Display instructions on how to claim the certificate of completion
+const displayCompletionInstructions = () => {
   const instructions = `
     <div id="completion-instructions">
       <h2>Congratulations!</h2>
@@ -19,9 +19,9 @@ function onAccumulatedTimeReachedThreshold() {
   `;
 
   document.body.insertAdjacentHTML('beforeend', instructions);
-}
+};
 
-function checkThresholdReached(accumulatedTime, videoDuration) {
+const checkThresholdReached = (accumulatedTime, videoDuration) => {
   if (videoDuration === null) {
     return;
   }
@@ -32,53 +32,44 @@ function checkThresholdReached(accumulatedTime, videoDuration) {
   const instructionsElement = document.getElementById('completion-instructions');
 
   if (thresholdReached && !instructionsElement) {
-    onAccumulatedTimeReachedThreshold();
+    displayCompletionInstructions();
   } else if (!thresholdReached && instructionsElement) {
     instructionsElement.remove();
   }
-}
+};
+
+const handleTimeUpdate = (data, context) => {
+  if (context.lastUpdateTime !== null) {
+    const currentTime = data.seconds;
+    const deltaTime = (currentTime - context.lastUpdateTime) * context.playbackRate;
+    const seekThreshold = 5;
+
+    if (deltaTime > 0 && deltaTime < seekThreshold) {
+      context.accumulatedTime += deltaTime;
+      localStorage.setItem('accumulatedTime', context.accumulatedTime);
+      checkThresholdReached(context.accumulatedTime, context.videoDuration);
+    }
+  }
+  context.lastUpdateTime = data.seconds;
+};
 
 document.addEventListener('DOMContentLoaded', () => {
-  const player = new Vimeo.Player(document.querySelector('iframe'), { id: VIDEO_ID });
-  let accumulatedTime = parseFloat(localStorage.getItem('accumulatedTime')) || 0;
-  let playbackRate = 1;
-  let lastUpdateTime = null;
-  let videoDuration = null;
+  const player = createVimeoPlayer('iframe', VIDEO_ID);
+  const context = {
+    accumulatedTime: parseFloat(localStorage.getItem('accumulatedTime')) || 0,
+    playbackRate: 1,
+    lastUpdateTime: null,
+    videoDuration: null,
+  };
 
   player.getDuration().then((duration) => {
-    videoDuration = duration;
-    checkThresholdReached(accumulatedTime, videoDuration);
+    context.videoDuration = duration;
+    checkThresholdReached(context.accumulatedTime, context.videoDuration);
   });
 
-  player.on('timeupdate', (data) => {
-    if (lastUpdateTime !== null) {
-      const currentTime = data.seconds;
-      const deltaTime = (currentTime - lastUpdateTime) * playbackRate;
-      
-      // Check if deltaTime is too large (e.g., more than 5 seconds), indicating a seek operation
-      const seekThreshold = 5;
-      if (deltaTime > 0 && deltaTime < seekThreshold) {
-        accumulatedTime += deltaTime;
-        localStorage.setItem('accumulatedTime', accumulatedTime);
-        checkThresholdReached(accumulatedTime, videoDuration);
-      }
-    }
-    lastUpdateTime = data.seconds;
-  });
-  
-  player.on('ratechange', (data) => {
-    playbackRate = data.playbackRate;
-  });
-
-  player.on('seeked', () => {
-    lastUpdateTime = null;
-  });
-
-  player.on('ended', () => {
-    lastUpdateTime = null;
-  });
-
-  player.on('pause', () => {
-    lastUpdateTime = null;
-  });
+  player.on('timeupdate', (data) => handleTimeUpdate(data, context));
+  player.on('ratechange', (data) => (context.playbackRate = data.playbackRate));
+  player.on('seeked', () => (context.lastUpdateTime = null));
+  player.on('ended', () => (context.lastUpdateTime = null));
+  player.on('pause', () => (context.lastUpdateTime = null));
 });
