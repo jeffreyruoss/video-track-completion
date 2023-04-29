@@ -1,4 +1,4 @@
-const VIDEO_ID = '100902001';
+const VIDEO_ID = '235215203';
 const WATCHED_PERCENTAGE_THRESHOLD = 80;
 
 const createVimeoPlayer = (videoId) => {
@@ -45,7 +45,8 @@ const checkThresholdReached = (accumulatedTime, videoDuration) => {
 const handleTimeUpdate = (data, context) => {
   if (context.lastUpdateTime !== null) {
     const currentTime = data.seconds;
-    const deltaTime = (currentTime - context.lastUpdateTime) * context.playbackRate;
+    const deltaTime = ((currentTime - context.lastUpdateTime) * context.playbackRate) / context.playbackRate;
+
     const seekThreshold = 5;
 
     if (deltaTime > 0 && deltaTime < seekThreshold) {
