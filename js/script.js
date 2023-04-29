@@ -1,8 +1,8 @@
 // Replace VIDEO_ID with your Vimeo video ID
-const player = new Vimeo.Player(document.querySelector('iframe'), { id: 817783353 });
-// script.js
+const VIDEO_ID = '817783353';
+const WATCHED_PERCENTAGE_THRESHOLD = 90; // Change this value to set the desired threshold
 
-const WATCHED_PERCENTAGE_THRESHOLD = 1; // Change this value to set the desired threshold
+const player = new Vimeo.Player(document.querySelector('iframe'), { id: VIDEO_ID });
 
 function onAccumulatedTimeReachedThreshold() {
   // Display instructions on how to claim the certificate of completion
@@ -39,7 +39,7 @@ function checkThresholdReached(accumulatedTime, videoDuration) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const player = new Vimeo.Player(document.querySelector('iframe'), { id: 817783353 });
+  const player = new Vimeo.Player(document.querySelector('iframe'), { id: VIDEO_ID });
   let accumulatedTime = parseFloat(localStorage.getItem('accumulatedTime')) || 0;
   let playbackRate = 1;
   let lastUpdateTime = null;
