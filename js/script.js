@@ -1,13 +1,18 @@
-const VIDEO_ID = '235215203';
+const VIDEO_ID = ''; // for the first video
+// const VIDEO_ID = '235215203'; // '' for a specfic video (replace with your video id)
+
 const WATCHED_PERCENTAGE_THRESHOLD = 80;
 
 const createVimeoPlayer = (videoId) => {
-  const iframeElement = Array.from(document.querySelectorAll('iframe')).find(iframe =>
-    iframe.src.includes(videoId)
-  );
+  const iframeElements = Array.from(document.querySelectorAll('iframe'));
+
+  const iframeElement = videoId
+    ? iframeElements.find(iframe => iframe.src.includes(videoId))
+    : iframeElements.find(iframe => iframe.src.includes('player.vimeo.com'));
 
   return new Vimeo.Player(iframeElement, { id: videoId });
 };
+
 
 const displayCompletionInstructions = () => {
   const instructions = `
