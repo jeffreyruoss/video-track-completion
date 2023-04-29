@@ -1,5 +1,5 @@
-const VIDEO_ID = ''; // for the first video
-// const VIDEO_ID = '235215203'; // '' for a specfic video (replace with your video id)
+// const VIDEO_ID = ''; // for the first video
+const VIDEO_ID = '235215203'; // '' for a specfic video (replace with your video id)
 
 const WATCHED_PERCENTAGE_THRESHOLD = 80;
 
