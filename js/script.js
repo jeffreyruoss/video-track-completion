@@ -55,7 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentTime = data.seconds;
       const deltaTime = (currentTime - lastUpdateTime) * playbackRate;
       
-      if (deltaTime > 0) {
+      // Check if deltaTime is too large (e.g., more than 5 seconds), indicating a seek operation
+      const seekThreshold = 5;
+      if (deltaTime > 0 && deltaTime < seekThreshold) {
         accumulatedTime += deltaTime;
         localStorage.setItem('accumulatedTime', accumulatedTime);
         checkThresholdReached(accumulatedTime, videoDuration);
@@ -63,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     lastUpdateTime = data.seconds;
   });
-
+  
   player.on('ratechange', (data) => {
     playbackRate = data.playbackRate;
   });
